@@ -1,0 +1,505 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.6.2/RecordRTC.js"></script>
+<style>
+    html, body {
+        margin: 0!important;
+        padding: 0!important;
+    }
+</style>
+
+<script src="https://res.cdn.office.net/teams-js/2.2.0/js/MicrosoftTeams.min.js"
+        integrity="sha384yBjE++eHeBPzIg+IKl9OHFqMbSdrzY2S/LW3qeitc5vqXewEYRWegByWzBN/chRh"
+        crossorigin="anonymous" >
+</script>
+<script>
+    // Initialize the library
+    await microsoftTeams.app.initialize();
+</script>
+
+
+<title>Store Walkthrough App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+
+<br>
+<center>
+<button id="btn-microphone" type="button" class="btn btn-primary bi bi-mic" style="width:200px; height:200px; font-size: 100px;">
+
+</button>
+
+
+<br /><br />
+<button id="btn-complete" type="button" class="btn btn-secondary" style="width:200px; height:100px; font-size: 20px;" disabled>
+  Finish Inspection
+</button>
+
+
+<hr>
+<div><audio controls autoplay playsinline></audio></div>
+</center>
+<h1 id="header">Status</h1>
+
+<br /><br /><br />
+<button id="btn-start-recording">Start Recording</button>
+<button id="btn-stop-recording" disabled>Stop Recording</button>
+<button id="btn-release-microphone" disabled>Release Microphone</button>
+<button id="btn-download-recording" disabled>Download</button>
+
+<script>
+    var audio = document.querySelector('audio');
+
+    function captureMicrophone(callback) {
+        btnReleaseMicrophone.disabled = false;
+
+        if(microphone) {
+            callback(microphone);
+            return;
+        }
+
+        if(typeof navigator.mediaDevices === 'undefined' || !navigator.mediaDevices.getUserMedia) {
+            alert('This browser does not supports WebRTC getUserMedia API.');
+
+            if(!!navigator.getUserMedia) {
+                alert('This browser seems supporting deprecated getUserMedia API.');
+            }
+        }
+
+        navigator.mediaDevices.getUserMedia({
+            audio: isEdge ? true : {
+                echoCancellation: false
+            }
+        }).then(function(mic) {
+            callback(mic);
+        }).catch(function(error) {
+            alert('Unable to capture your microphone. Please check console logs.');
+            console.error(error);
+        });
+    }
+
+    function replaceAudio(src) {
+        var newAudio = document.createElement('audio');
+        newAudio.controls = true;
+        newAudio.autoplay = true;
+
+        if(src) {
+            newAudio.src = src;
+        }
+
+        var parentNode = audio.parentNode;
+        parentNode.innerHTML = '';
+        parentNode.appendChild(newAudio);
+
+        audio = newAudio;
+    }
+
+    // this function is used to generate random file name
+    function getFileName(fileExtension) {
+        var d = new Date();
+        var year = d.getUTCFullYear();
+        var month = d.getUTCMonth();
+        var date = d.getUTCDate();
+        return 'RecordRTC-' + year + month + date + '-' + getRandomString() + '.' + fileExtension;
+    }
+
+    function stopRecordingCallback() {
+        var audioBlob = recorder.getBlob();
+        replaceAudio(URL.createObjectURL(audioBlob));
+        var fileName = getFileName('wav');
+        // we need to upload "File" --- not "Blob"
+        var fileObject = new File([audioBlob], fileName, {
+            type: 'audio/wav'
+        });
+
+        uploadToServer(fileObject, function(response, fileDownloadURL) {
+            if(response !== 'ended') {
+                document.getElementById('header').innerHTML = response; // upload progress
+                return;
+            }
+
+            document.getElementById('header').innerHTML = '<a href="' + fileDownloadURL + '" target="_blank">' + fileDownloadURL + '</a>';
+
+            alert('Successfully uploaded recorded blob.');
+
+            // preview uploaded file
+            // document.getElementById('your-video-id').srcObject = null;
+            // document.getElementById('your-video-id').src = fileDownloadURL;
+
+            // open uploaded file in a new tab
+            // window.open(fileDownloadURL);
+        });
+
+        // document.getElementById('audio_data').value = fileObject;
+        // console.log(document.getElementById('audio_data').value);
+        // document.getElementById('submitform').submit();
+        return;
+
+        // From: https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/php-upload-simple-javascript.html
+        /* uploadToPHPServer(fileObject, function(response, fileDownloadURL) {
+            if(response !== 'ended') {
+                document.getElementById('header').innerHTML = response; // upload progress
+                return;
+            }
+
+            document.getElementById('header').innerHTML = '<a href="' + fileDownloadURL + '" target="_blank">' + fileDownloadURL + '</a>';
+
+            alert('Successfully uploaded recorded blob.');
+
+            // preview uploaded file
+            document.getElementById('your-video-id').srcObject = null;
+            document.getElementById('your-video-id').src = fileDownloadURL;
+
+            // open uploaded file in a new tab
+            window.open(fileDownloadURL);
+        }); */
+
+        btnStartRecording.disabled = false;
+
+        /* setTimeout(function() {
+            if(!audio.paused) return;
+
+            setTimeout(function() {
+                if(!audio.paused) return;
+                audio.play();
+            }, 1000);
+
+            audio.play();
+        }, 300);
+
+        audio.play();
+
+        btnDownloadRecording.disabled = false;
+
+        if(isSafari) {
+            click(btnReleaseMicrophone);
+        } */
+    }
+
+    var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveOrOpenBlob || !!navigator.msSaveBlob);
+    var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+    var recorder; // globally accessible
+    var microphone;
+
+    var btnMicrophone = document.getElementById('btn-microphone');
+    var btnComplete = document.getElementById('btn-complete');
+    var currentState = 0;
+
+    btnComplete.onclick = function() {
+        this.disabled = true;
+        btnMicrophone.disabled = true;
+        recorder.stopRecording(stopRecordingCallback);
+    }
+
+    btnMicrophone.onclick = function() {
+        // Start recording
+        if (currentState === 0)
+        {
+            /* if (!microphone) {
+                captureMicrophone(function(mic) {
+                    microphone = mic;
+
+                    if(isSafari) {
+                        replaceAudio();
+
+                        audio.muted = true;
+                        audio.srcObject = microphone;
+
+                        btnStartRecording.disabled = false;
+                        btnStartRecording.style.border = '1px solid red';
+                        btnStartRecording.style.fontSize = '150%';
+
+                        alert('Please click microphone icon again. First time we tried to access your microphone. Now we will record it.');
+                        return;
+                    }
+
+                    click(btnMicrophone);
+                });
+                return;
+            } */
+
+            this.classList.replace("bi-mic", "bi-mic-fill");
+            this.classList.replace("btn-primary", "btn-success");
+
+            replaceAudio();
+
+            audio.muted = true;
+            audio.srcObject = microphone;
+
+            var options = {
+                mimeType: 'audio/wav',
+                type: 'audio',
+                numberOfAudioChannels: isEdge ? 1 : 2,
+                checkForInactiveTracks: true,
+                bufferSize: 16384
+            };
+
+            if(isSafari || isEdge) {
+                options.recorderType = StereoAudioRecorder;
+            }
+
+            if(navigator.platform && navigator.platform.toString().toLowerCase().indexOf('win') === -1) {
+                options.sampleRate = 48000; // or 44100 or remove this line for default
+            }
+
+            if(isSafari) {
+                options.sampleRate = 44100;
+                options.bufferSize = 4096;
+                options.numberOfAudioChannels = 2;
+            }
+
+            if(recorder) {
+                recorder.destroy();
+                recorder = null;
+            }
+
+            recorder = RecordRTC(microphone, options);
+
+            recorder.startRecording();
+            currentState = 1;
+        }
+        else if(currentState === 1)
+        {
+            recorder.pauseRecording();
+            this.classList.replace("btn-success", "btn-secondary");
+            this.classList.replace("bi-mic-fill", "bi-mic-mute");
+            currentState = 2;
+            btnComplete.disabled = false;
+            btnComplete.classList.replace("btn-secondary", "btn-success");
+        }
+        else if(currentState === 2)
+        {
+            recorder.resumeRecording();
+            this.classList.replace("btn-secondary", "btn-success");
+            this.classList.replace("bi-mic-mute", "bi-mic-fill");
+            currentState = 1;
+            btnComplete.disabled = true;
+            btnComplete.classList.replace("btn-success", "btn-secondary");
+        }
+    }
+
+    var btnStartRecording = document.getElementById('btn-start-recording');
+    var btnStopRecording = document.getElementById('btn-stop-recording');
+    var btnReleaseMicrophone = document.querySelector('#btn-release-microphone');
+    var btnDownloadRecording = document.getElementById('btn-download-recording');
+
+    btnStartRecording.onclick = function() {
+        /* document.getElementById('audio_data').value = "trsting"
+        console.log(document.getElementById('audio_data').value);
+        document.getElementById('submitform').submit();
+        return; */
+        this.disabled = true;
+        this.style.border = '';
+        this.style.fontSize = '';
+
+        if (!microphone) {
+            captureMicrophone(function(mic) {
+                microphone = mic;
+
+                if(isSafari) {
+                    replaceAudio();
+
+                    audio.muted = true;
+                    audio.srcObject = microphone;
+
+                    btnStartRecording.disabled = false;
+                    btnStartRecording.style.border = '1px solid red';
+                    btnStartRecording.style.fontSize = '150%';
+
+                    alert('Please click startRecording button again. First time we tried to access your microphone. Now we will record it.');
+                    return;
+                }
+
+                click(btnStartRecording);
+            });
+            return;
+        }
+
+        replaceAudio();
+
+        audio.muted = true;
+        audio.srcObject = microphone;
+
+        var options = {
+            type: 'audio',
+            numberOfAudioChannels: isEdge ? 1 : 2,
+            checkForInactiveTracks: true,
+            bufferSize: 16384
+        };
+
+        if(isSafari || isEdge) {
+            options.recorderType = StereoAudioRecorder;
+        }
+
+        if(navigator.platform && navigator.platform.toString().toLowerCase().indexOf('win') === -1) {
+            options.sampleRate = 48000; // or 44100 or remove this line for default
+        }
+
+        if(isSafari) {
+            options.sampleRate = 44100;
+            options.bufferSize = 4096;
+            options.numberOfAudioChannels = 2;
+        }
+
+        if(recorder) {
+            recorder.destroy();
+            recorder = null;
+        }
+
+        recorder = RecordRTC(microphone, options);
+
+        recorder.startRecording();
+
+        btnStopRecording.disabled = false;
+        btnDownloadRecording.disabled = true;
+    };
+
+    btnStopRecording.onclick = function() {
+        this.disabled = true;
+        recorder.stopRecording(stopRecordingCallback);
+    };
+
+    btnReleaseMicrophone.onclick = function() {
+        this.disabled = true;
+        btnStartRecording.disabled = false;
+
+        if(microphone) {
+            microphone.stop();
+            microphone = null;
+        }
+
+        if(recorder) {
+            // click(btnStopRecording);
+        }
+    };
+
+    btnDownloadRecording.onclick = function() {
+        this.disabled = true;
+        if(!recorder || !recorder.getBlob()) return;
+
+        if(isSafari) {
+            recorder.getDataURL(function(dataURL) {
+                SaveToDisk(dataURL, getFileName('mp3'));
+            });
+            return;
+        }
+
+        var blob = recorder.getBlob();
+        var file = new File([blob], getFileName('mp3'), {
+            type: 'audio/mp3'
+        });
+        invokeSaveAsDialog(file);
+    };
+
+    function click(el) {
+        el.disabled = false; // make sure that element is not disabled
+        var evt = document.createEvent('Event');
+        evt.initEvent('click', true, true);
+        el.dispatchEvent(evt);
+    }
+
+    function getRandomString() {
+        if (window.crypto && window.crypto.getRandomValues && navigator.userAgent.indexOf('Safari') === -1) {
+            var a = window.crypto.getRandomValues(new Uint32Array(3)),
+                token = '';
+            for (var i = 0, l = a.length; i < l; i++) {
+                token += a[i].toString(36);
+            }
+            return token;
+        } else {
+            return (Math.random() * new Date().getTime()).toString(36).replace(/\./g, '');
+        }
+    }
+
+    function getFileName(fileExtension) {
+        var d = new Date();
+        var year = d.getFullYear();
+        var month = d.getMonth();
+        var date = d.getDate();
+        return 'RecordRTC-' + year + month + date + '-' + getRandomString() + '.' + fileExtension;
+    }
+
+    function SaveToDisk(fileURL, fileName) {
+        // for non-IE
+        if (!window.ActiveXObject) {
+            var save = document.createElement('a');
+            save.href = fileURL;
+            save.download = fileName || 'unknown';
+            save.style = 'display:none;opacity:0;color:transparent;';
+            (document.body || document.documentElement).appendChild(save);
+
+            if (typeof save.click === 'function') {
+                save.click();
+            } else {
+                save.target = '_blank';
+                var event = document.createEvent('Event');
+                event.initEvent('click', true, true);
+                save.dispatchEvent(event);
+            }
+
+            (window.URL || window.webkitURL).revokeObjectURL(save.href);
+        }
+
+        // for IE
+        else if (!!window.ActiveXObject && document.execCommand) {
+            var _window = window.open(fileURL, '_blank');
+            _window.document.close();
+            _window.document.execCommand('SaveAs', true, fileName || fileURL)
+            _window.close();
+        }
+    }
+
+    function uploadToServer(blob, callback) {
+        // create FormData
+        var formData = new FormData();
+        formData.append('audio_filename', blob.name);
+        formData.append('audio_data', blob);
+        callback('Uploading recorded-file to server.');
+
+        var upload_url = '<%=recordings_handle_upload_path%>';
+
+        var upload_directory = upload_url;
+
+        makeXMLHttpRequest(upload_url, formData, function(progress) {
+            if (progress !== 'upload-ended') {
+                callback(progress);
+                return;
+            }
+            var initialURL = upload_directory + blob.name;
+            callback('ended', initialURL);
+        });
+    }
+
+    function makeXMLHttpRequest(url, data, callback) {
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function() {
+            if (request.readyState == 4 && request.status == 200) {
+                if (request.responseText === 'success') {
+                    callback('upload-ended');
+                    return;
+                }
+
+                alert(request.responseText);
+                //alert("success");
+                return;
+            }
+        };
+        request.upload.onloadstart = function() {
+            console.log('Upload started...');
+        };
+        request.upload.onprogress = function(event) {
+            console.log('Upload Progress ' + Math.round(event.loaded / event.total * 100) + "%");
+        };
+        request.upload.onload = function() {
+            console.log('progress-about-to-end');
+        };
+        request.upload.onload = function() {
+            console.log('Upload ended. Getting file URL.');
+        };
+        request.upload.onerror = function(error) {
+            console.log('Upload failed.');
+        };
+        request.upload.onabort = function(error) {
+            console.log('Upload aborted.');
+        };
+        request.open('POST', url);
+        request.send(data);
+    }
+</script>

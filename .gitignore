@@ -1,0 +1,132 @@
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+
+# Used by dotenv library to load environment variables.
+# .env
+
+# Ignore Byebug command history file.
+.byebug_history
+
+## Specific to RubyMotion:
+.dat*
+.repl_history
+build/
+*.bridgesupport
+build-iPhoneOS/
+build-iPhoneSimulator/
+
+## Specific to RubyMotion (use of CocoaPods):
+#
+# We recommend against adding the Pods directory to your .gitignore. However
+# you should judge for yourself, the pros and cons are mentioned at:
+# https://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
+#
+# vendor/Pods/
+
+## Documentation cache and generated files:
+/.yardoc/
+/_yardoc/
+/doc/
+/rdoc/
+
+## Environment normalization:
+/.bundle/
+/vendor/bundle
+/lib/bundler/man/
+
+# for a library or gem, you might want to ignore these files since the code is
+# intended to run in multiple environments; otherwise, check them in:
+# Gemfile.lock
+# .ruby-version
+# .ruby-gemset
+
+# unless supporting rvm < 1.11.0 or doing something fancy, ignore this:
+.rvmrc
+
+# Used by RuboCop. Remote config files pulled in from inherit_from directive.
+# .rubocop-https?--*
+##################################
+*.rbc
+*.sassc
+.sass-cache
+capybara-*.html
+.rspec
+/.bundle
+/vendor/bundle
+/log/*
+/tmp/*
+/db/*.sqlite3
+/db/secondbase
+/public/system/*
+/coverage/
+/spec/tmp/*
+**.orig
+rerun.txt
+pickle-email-*.html
+
+# Specific configuration files #
+################################
+hydra-ldap.yml
+database.yml
+fedora.yml
+solr.yml
+secrets.yml
+blacklight.yml
+contact_emails.yml
+analytics.yml
+blazegraph.yml
+blazer.yml
+dta.yml
+
+# Files to ignore by default in Git #
+#####################################
+*.pdf
+*.db
+*.jar
+*.gz
+*.tar
+*.zip
+*.dll
+*.sqlite
+*.sql
+
+# Specific Files to ignore #
+############################
+Thumbs.db
+#Icon?
+.DS_Store?
+.DS_Store
+ehthumbs.db
+.idea # Rubymine config files
+/.idea/*
+Gemfile.lock
+.env
+
+# Directories to ignore #
+#########################
+/public/data/*
+/public/assets/*
+/public/batch_uploads/*
+/public/uploads/*
+/jetty/*
+/solr_conf/*
+/fedora_conf/*
+/hydra-jetty/*
+/*jetty*
+/solr/instance/*
+/solr/solr*
+
+# Ignore edited Linux files #
+#############################
+
+*~
+._*
