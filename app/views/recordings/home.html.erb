@@ -65,9 +65,9 @@
     </ol>
     </p>
   </div>
-  <div class="card-footer text-muted d-none" id="document_link_area"></div>
+  <div class="card-footer d-none" id="document_link_area"></div>
 </div>
-
+<br />
 <script>
     if ( window !== window.parent )
     {
@@ -352,10 +352,10 @@
                 document.getElementById('status_area').innerHTML = "Your Report Is Transcribed Below";
                 document.getElementById('currentTextArea').innerHTML = html;*/
                 document.getElementById('inspection_header').innerHTML = 'Generated Inspection Report:'
-                document.getElementById('document_link_area').innerHTML = 'Report Link: <a href="https://aisitewalkthrough.com/uploads/' + myWalthroughFileName + '.docx" target="_blank">Download</a>';
+                document.getElementById('document_link_area').innerHTML = 'Report Link: <a href="https://aisitewalkthrough.com/uploads/' + myWalthroughFileName + '.docx" target="_blank">Download Here</a>';
                 document.getElementById('document_link_area').classList.remove('d-none');
                 document.getElementById('currentTextArea').innerHTML = request.responseText;
-                document.getElementById('status_area').innerHTML = 'Inspection Report Complete. Click <a href="#" onclick="location.reload(); return false;">here</a> for a new report.';
+                document.getElementById('status_area').innerHTML = 'Processing Complete. Click <a href="#" onclick="location.reload(); return false;">here</a> to do a new report.';
 
                 // alert(request.responseText);
                 //alert("success");

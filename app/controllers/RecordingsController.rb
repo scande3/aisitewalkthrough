@@ -79,15 +79,15 @@ class RecordingsController < ApplicationController
     azure_ai_response_json = JSON.parse(azure_ai_response)
     report_markdown = azure_ai_response_json["choices"].first["message"]["content"].to_s
     report_markdown.gsub!("For bathroom one (also known as the one with stalls only or the women's bathroom):", "Bathroom One Inspection Report:")
-    report_markdown.gsub!("For bathroom two (also known as the bathroom with both urinals and stalls or the men's bathroom)", "Bathroom Two Inspection Report:")
+    report_markdown.gsub!("For bathroom two (also known as the bathroom with both urinals and stalls or the men's bathroom):", "Bathroom Two Inspection Report:")
     @converter = PandocRuby.new(report_markdown, from: :markdown, to: :html)
     final_html = @converter.convert
     puts final_html
-    final_html.gsub!("<h1>", "<h5>")
-    final_html.gsub!("<h2>", "<h5>")
-    final_html.gsub!("<h3>", "<h5>")
-    final_html.gsub!("<h4>", "<h5>")
-    final_html.gsub!("<h5>", "<h5>")
+    final_html.gsub!("h1", "h5")
+    final_html.gsub!("h2", "h5")
+    final_html.gsub!("h3", "h5")
+    final_html.gsub!("h4", "h5")
+    final_html.gsub!("h5", "h5")
 
     converter_docx = PandocRuby.new(report_markdown, from: :markdown, to: :docx)
     docx_path = Rails.root.join('public', 'uploads', "#{filename}.docx").to_s
