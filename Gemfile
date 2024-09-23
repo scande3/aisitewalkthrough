@@ -60,3 +60,4 @@ end
 
 gem 'dotenv-rails'
 gem 'rest-client'
+gem 'pandoc-ruby'

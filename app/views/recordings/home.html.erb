@@ -63,7 +63,7 @@
 
 
 <script>
-    var audio = document.querySelector('audio');
+    var fileName = 'empty';
 
     function captureMicrophone(callback) {
 
@@ -98,12 +98,13 @@
         var year = d.getUTCFullYear();
         var month = d.getUTCMonth();
         var date = d.getUTCDate();
-        return 'RecordRTC-' + year + month + date + '-' + getRandomString() + '.' + fileExtension;
+        //return 'RecordRTC-' + year + month + date + '-' + getRandomString() + '.' + fileExtension;
+        return 'RecordRTC-' + year + month + date + '-' + getRandomString();
     }
 
     function stopRecordingCallback() {
         var audioBlob = recorder.getBlob();
-        var fileName = getFileName('wav');
+        fileName = getFileName('wav');
         // we need to upload "File" --- not "Blob"
         var fileObject = new File([audioBlob], fileName, {
             type: 'audio/wav'
@@ -148,6 +149,13 @@
     var currentState = 0;
 
     btnComplete.onclick = function() {
+        if(currentState === 1)
+        {
+            recorder.pauseRecording();
+            btnMicrophone.classList.replace("btn-success", "btn-secondary");
+            btnMicrophone.classList.replace("bi-mic-fill", "bi-mic-mute");
+            currentState = 2;
+        }
         this.disabled = true;
         btnMicrophone.disabled = true;
         recorder.stopRecording(stopRecordingCallback);
@@ -178,6 +186,8 @@
 
             this.classList.replace("bi-mic", "bi-mic-fill");
             this.classList.replace("btn-primary", "btn-success");
+            btnComplete.classList.replace("btn-secondary", "btn-success");
+            btnComplete.disabled = false;
             document.getElementById('status_area').innerHTML = "Recording audio from microphone...";
 
             var options = {
@@ -221,8 +231,8 @@
             this.classList.replace("btn-success", "btn-secondary");
             this.classList.replace("bi-mic-fill", "bi-mic-mute");
             currentState = 2;
-            btnComplete.disabled = false;
-            btnComplete.classList.replace("btn-secondary", "btn-success");
+            //btnComplete.disabled = false;
+            //btnComplete.classList.replace("btn-secondary", "btn-success");
             document.getElementById('status_area').innerHTML = "Audio Recording Paused...";
         }
         else if(currentState === 2)
@@ -231,8 +241,8 @@
             this.classList.replace("btn-secondary", "btn-success");
             this.classList.replace("bi-mic-mute", "bi-mic-fill");
             currentState = 1;
-            btnComplete.disabled = true;
-            btnComplete.classList.replace("btn-success", "btn-secondary");
+            //btnComplete.disabled = true;
+            //btnComplete.classList.replace("btn-success", "btn-secondary");
             document.getElementById('status_area').innerHTML = "Recording audio from microphone...";
         }
     }
@@ -309,12 +319,16 @@
                     return;
                 }
 
-                var converter = new showdown.Converter(),
+                /*var converter = new showdown.Converter(),
                   text = request.responseText,
                   html      = converter.makeHtml(text);
 
                 document.getElementById('status_area').innerHTML = "Your Report Is Transcribed Below";
-                document.getElementById('currentTextArea').innerHTML = html;
+                document.getElementById('currentTextArea').innerHTML = html;*/
+                fileName
+                document.getElementById('status_area').innerHTML = 'Report Link: <a href="https://aisitewalkthrough.com/public/' + fileName + '.docx" target="_blank">Downloadd</a>';
+                document.getElementById('currentTextArea').innerHTML = request.responseText;
+
                 // alert(request.responseText);
                 //alert("success");
                 return;
