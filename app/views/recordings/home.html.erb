@@ -192,7 +192,7 @@
         // Start recording
         if (currentState === 0)
         {
-            /* if (!microphone) {
+            if (!microphone) {
                 captureMicrophone(function(mic) {
                     microphone = mic;
 
@@ -213,7 +213,7 @@
                     click(btnMicrophone);
                 });
                 return;
-            } */
+            }
 
             this.classList.replace("bi-mic", "bi-mic-fill");
             this.classList.replace("btn-primary", "btn-success");
@@ -224,6 +224,7 @@
             audio.srcObject = microphone;
 
             var options = {
+                mimeType: 'audio/wav',
                 type: 'audio',
                 numberOfAudioChannels: isEdge ? 1 : 2,
                 checkForInactiveTracks: true,
