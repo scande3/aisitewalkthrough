@@ -13,8 +13,8 @@
 </script>
 <script>
     // Initialize the library
-    await microsoftTeams.app.initialize();
-    // microsoftTeams.initialize();
+    //await microsoftTeams.app.initialize();
+    microsoftTeams.initialize();
 </script>
 
 
@@ -63,6 +63,20 @@
 
 
 <script>
+    if ( window !== window.parent )
+    {
+        // The page is in an iframe
+        navigator.permissions.query({name:'microphone'}).then(function(result) {
+            if (result.state == 'granted') {
+                // Access granted
+            } else if (result.state == 'prompt') {
+                // Access has not been granted
+                navigator.mediaDevices.getUserMedia({ audio: true });
+            }
+        });
+    }
+
+
     var myWalthroughFileName = 'empty';
 
     function captureMicrophone(callback) {
