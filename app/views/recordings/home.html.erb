@@ -180,9 +180,6 @@
             this.classList.replace("btn-primary", "btn-success");
             document.getElementById('status_area').innerHTML = "Recording audio from microphone...";
 
-            audio.muted = true;
-            audio.srcObject = microphone;
-
             var options = {
                 mimeType: 'audio/wav',
                 type: 'audio',
