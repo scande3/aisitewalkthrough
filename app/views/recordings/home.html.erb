@@ -63,7 +63,7 @@
 
 
 <script>
-    var fileName = 'empty';
+    var myWalthroughFileName = 'empty';
 
     function captureMicrophone(callback) {
 
@@ -104,9 +104,9 @@
 
     function stopRecordingCallback() {
         var audioBlob = recorder.getBlob();
-        fileName = getFileName('wav');
+        myWalthroughFileName = getFileName('wav');
         // we need to upload "File" --- not "Blob"
-        var fileObject = new File([audioBlob], fileName, {
+        var fileObject = new File([audioBlob], myWalthroughFileName, {
             type: 'audio/wav'
         });
 
@@ -156,6 +156,7 @@
             btnMicrophone.classList.replace("bi-mic-fill", "bi-mic-mute");
             currentState = 2;
         }
+        btnComplete.classList.replace("btn-primary", "btn-secondary");
         this.disabled = true;
         btnMicrophone.disabled = true;
         recorder.stopRecording(stopRecordingCallback);
@@ -186,7 +187,7 @@
 
             this.classList.replace("bi-mic", "bi-mic-fill");
             this.classList.replace("btn-primary", "btn-success");
-            btnComplete.classList.replace("btn-secondary", "btn-success");
+            btnComplete.classList.replace("btn-secondary", "btn-primary");
             btnComplete.disabled = false;
             document.getElementById('status_area').innerHTML = "Recording audio from microphone...";
 
@@ -286,7 +287,8 @@
         var year = d.getFullYear();
         var month = d.getMonth();
         var date = d.getDate();
-        return 'RecordRTC-' + year + month + date + '-' + getRandomString() + '.' + fileExtension;
+        //return 'RecordRTC-' + year + month + date + '-' + getRandomString() + '.' + fileExtension;
+        return 'RecordRTC-' + year + month + date + '-' + getRandomString();
     }
 
     function uploadToServer(blob, callback) {
@@ -325,8 +327,7 @@
 
                 document.getElementById('status_area').innerHTML = "Your Report Is Transcribed Below";
                 document.getElementById('currentTextArea').innerHTML = html;*/
-                fileName
-                document.getElementById('status_area').innerHTML = 'Report Link: <a href="https://aisitewalkthrough.com/public/' + fileName + '.docx" target="_blank">Downloadd</a>';
+                document.getElementById('status_area').innerHTML = 'Report Link: <a href="https://aisitewalkthrough.com/public/' + myWalthroughFileName + '.docx" target="_blank">Download</a>';
                 document.getElementById('currentTextArea').innerHTML = request.responseText;
 
                 // alert(request.responseText);
