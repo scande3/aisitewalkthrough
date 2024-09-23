@@ -6,6 +6,10 @@
         margin: 0!important;
         padding: 0!important;
     }
+    .card {
+        margin-right: 10px;
+        margin-left: 10px;
+    }
 </style>
 
 <script src="https://res.cdn.office.net/teams-js/2.2.0/js/MicrosoftTeams.min.js"
@@ -22,45 +26,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
 <center>
-  <hr />
-  <h2 id="status_area">Click to Microphone to start recording...</h2>
-  <hr />
-<button id="btn-microphone" type="button" class="btn btn-primary bi bi-mic" style="width:200px; height:200px; font-size: 100px;">
+  <div class="card">
+    <div class="card-header" id="status_area">
+      Click to Microphone to start recording...
+    </div>
+    <div class="card-body">
+      <p class="card-text">
+        <button id="btn-microphone" type="button" class="btn btn-primary bi bi-mic" style="width:200px; height:200px; font-size: 100px;">
+        </button>
 
-</button>
+        <br /><br />
+        <button id="btn-complete" type="button" class="btn btn-secondary" style="width:200px; height:100px; font-size: 20px;" disabled>
+          Finish Inspection
+        </button>
 
-
-<br /><br />
-<button id="btn-complete" type="button" class="btn btn-secondary" style="width:200px; height:100px; font-size: 20px;" disabled>
-  Finish Inspection
-</button>
+      </p>
+    </div>
+  </div>
 
 </center>
-<hr />
-<div id="currentTextArea">
-<h2>For the bathroom that is stalls only (also known as bathroom one):</h2>
-<ol>
-  <li>Are all bathroom stalls cleaned?</li>
-  <li>Is toilet paper stocked?</li>
-  <li>Are paper towels stocked?</li>
-  <li>Is the soap dispenser full?</li>
-  <li>Are trashes emptied?</li>
-  <li>Is the mirror clean?</li>
-  <li>Does any other part of the bathroom require repair or follow-up?</li>
-</ol>
+<br />
 
-<h2>For the bathroom that has urinals (also known as bathroom two):</h2>
-<ol>
-  <li>Are all bathroom stalls cleaned?</li>
-  <li>Is toilet paper stocked?</li>
-  <li>Are paper towels stocked?</li>
-  <li>Is the soap dispenser full?</li>
-  <li>Are trashes emptied?</li>
-  <li>Is the mirror clean?</li>
-  <li>Does any other part of the bathroom require repair or follow-up?</li>
-</ol>
+<div class="card">
+  <div class="card-header" id="inspection_header">
+    Inspection Task
+  </div>
+  <div class="card-body" id="currentTextArea">
+    <p class="card-text">
+    <h5>Answer the following for bathroom one (stalls only) and then for bathroom two (urinals and stalls):</h5>
+    <ol>
+      <li>Are all bathroom stalls cleaned?</li>
+      <li>Is toilet paper stocked?</li>
+      <li>Are paper towels stocked?</li>
+      <li>Is the soap dispenser full?</li>
+      <li>Are trashes emptied?</li>
+      <li>Is the mirror clean?</li>
+      <li>Does any other part of the bathroom require repair or follow-up?</li>
+    </ol>
+    </p>
+  </div>
+  <div class="card-footer text-muted d-none" id="document_link_area"></div>
 </div>
-
 
 <script>
     if ( window !== window.parent )
@@ -174,6 +180,10 @@
         this.disabled = true;
         btnMicrophone.disabled = true;
         recorder.stopRecording(stopRecordingCallback);
+        if(microphone) {
+            microphone.stop();
+            microphone = null;
+        }
         document.getElementById('status_area').innerHTML = "Now processing audio...";
     }
 
@@ -341,8 +351,11 @@
 
                 document.getElementById('status_area').innerHTML = "Your Report Is Transcribed Below";
                 document.getElementById('currentTextArea').innerHTML = html;*/
-                document.getElementById('status_area').innerHTML = 'Report Link: <a href="https://aisitewalkthrough.com/uploads/' + myWalthroughFileName + '.docx" target="_blank">Download</a>';
+                document.getElementById('inspection_header').innerHTML = 'Generated Inspection Report:'
+                document.getElementById('document_link_area').innerHTML = 'Report Link: <a href="https://aisitewalkthrough.com/uploads/' + myWalthroughFileName + '.docx" target="_blank">Download</a>';
+                document.getElementById('document_link_area').classList.remove('d-none');
                 document.getElementById('currentTextArea').innerHTML = request.responseText;
+                document.getElementById('status_area').innerHTML = 'Inspection Report Complete. Click <a href="#" onclick="location.reload(); return false;">here</a> for a new report.';
 
                 // alert(request.responseText);
                 //alert("success");
@@ -370,4 +383,6 @@
         request.open('POST', url);
         request.send(data);
     }
+
+
 </script>

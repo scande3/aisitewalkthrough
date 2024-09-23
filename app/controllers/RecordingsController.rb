@@ -37,7 +37,7 @@ class RecordingsController < ApplicationController
     transcription_json = JSON.parse(transcription_service_result)
     transcription_result = transcription_json["DisplayText"].to_s
 
-    transcription_result = "The men's bathroom was clean and had adequate toilet paper. The bathroom with only stalls needed to be cleaned more."
+    # transcription_result = "The men's bathroom was clean and had adequate toilet paper. The bathroom with only stalls needed to be cleaned more."
 
     # payload = {}
     # payload["messages"] = []
@@ -74,13 +74,20 @@ class RecordingsController < ApplicationController
     #                                          timeout: 30)
 
 
-    azure_ai_response = `payload="{\\"messages\\":[{\\"role\\":\\"system\\",\\"content\\":[{\\"type\\":\\"text\\",\\"text\\":\\"# For the the bathroom that is stalls only (also known as bathroom one or women's bathroom):\\\\n1. Are all bathroom stalls cleaned?\\\\n2. Is toilet paper stocked?\\\\n3. Are paper towels stocked?\\\\n4. Is the soap dispenser full?\\\\n5. Are trashes emptied?\\\\n6. Is the mirror clean?\\\\n7. Does any other part of the bathroom require repair or follow-up?\\\\n# For the bathroom that has urinals (also known as bathroom two or men's bathroom):\\\\n1. Are all bathroom stalls cleaned?\\\\n2. Is toilet paper stocked?\\\\n3. Are paper towels stocked?\\\\n4. Is the soap dispenser full?\\\\n5. Are trashes emptied?\\\\n6. Is the mirror clean?\\\\n7. Does any other part of the bathroom require repair or follow-up?\\\\n\\\\nPlease go through each question before this section and use the information in the following paragraph to determine the answers. Keep the questions in the same order as the above. For each question, please reply with the question, the answer, and the text below that you used to determine the answer. For any question where there is not enough information to answer the question, please state \\\\\\"no answer provided\\\\\\".\\"}]},{\\"role\\":\\"user\\",\\"content\\":[{\\"type\\":\\"text\\",\\"text\\":\\"#{transcription_result}\\"}]}],\\"temperature\\":0.7,\\"top_p\\":0.95,\\"max_tokens\\":1200}"; curl "#{ENV['OPEN_AI_ENDPOINT']}/openai/deployments/walthrough_model_try1/chat/completions?api-version=2024-02-15-preview" -H "Content-Type: application/json" -H "api-key: #{ENV['OPEN_AI_KEY']}" -d "$payload"`
+    azure_ai_response = `payload="{\\"messages\\":[{\\"role\\":\\"system\\",\\"content\\":[{\\"type\\":\\"text\\",\\"text\\":\\"# For bathroom one (also known as the one with stalls only or the women's bathroom):\\\\n1. Are all bathroom stalls cleaned?\\\\n2. Is toilet paper stocked?\\\\n3. Are paper towels stocked?\\\\n4. Is the soap dispenser full?\\\\n5. Are trashes emptied?\\\\n6. Is the mirror clean?\\\\n7. Does any other part of the bathroom require repair or follow-up?\\\\n# For bathroom two (also known as the bathroom with both urinals and stalls or the men's bathroom):\\\\n1. Are all bathroom stalls cleaned?\\\\n2. Is toilet paper stocked?\\\\n3. Are paper towels stocked?\\\\n4. Is the soap dispenser full?\\\\n5. Are trashes emptied?\\\\n6. Is the mirror clean?\\\\n7. Does any other part of the bathroom require repair or follow-up?\\\\n\\\\nPlease go through each question before this section and use the information in the following paragraph to determine the answers. Keep the questions in the same order as the above. For each question, please reply with the question, the answer, and the text below that you used to determine the answer. For any question where there is not enough information to answer the question, please state \\\\\\"no answer provided\\\\\\".\\"}]},{\\"role\\":\\"user\\",\\"content\\":[{\\"type\\":\\"text\\",\\"text\\":\\"#{transcription_result}\\"}]}],\\"temperature\\":0.7,\\"top_p\\":0.95,\\"max_tokens\\":1200}"; curl "#{ENV['OPEN_AI_ENDPOINT']}/openai/deployments/walthrough_model_try1/chat/completions?api-version=2024-02-15-preview" -H "Content-Type: application/json" -H "api-key: #{ENV['OPEN_AI_KEY']}" -d "$payload"`
     puts azure_ai_response
     azure_ai_response_json = JSON.parse(azure_ai_response)
     report_markdown = azure_ai_response_json["choices"].first["message"]["content"].to_s
+    report_markdown.gsub!("For bathroom one (also known as the one with stalls only or the women's bathroom):", "Bathroom One Inspection Report:")
+    report_markdown.gsub!("For bathroom two (also known as the bathroom with both urinals and stalls or the men's bathroom)", "Bathroom Two Inspection Report:")
     @converter = PandocRuby.new(report_markdown, from: :markdown, to: :html)
     final_html = @converter.convert
     puts final_html
+    final_html.gsub!("<h1>", "<h5>")
+    final_html.gsub!("<h2>", "<h5>")
+    final_html.gsub!("<h3>", "<h5>")
+    final_html.gsub!("<h4>", "<h5>")
+    final_html.gsub!("<h5>", "<h5>")
 
     converter_docx = PandocRuby.new(report_markdown, from: :markdown, to: :docx)
     docx_path = Rails.root.join('public', 'uploads', "#{filename}.docx").to_s
