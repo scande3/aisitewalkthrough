@@ -13,7 +13,7 @@ class RecordingsController < ApplicationController
     # filename = SecureRandom.uuid + ".wav"
 
     @audio_data = params[:audio_data].path
-    #ata = File.read(@audio_data)
+    data = File.read(@audio_data)
     filename = params[:audio_filename]
     full_path = Rails.root.join('public', 'uploads', filename).to_s
     directory = Rails.root.join('public', 'uploads').to_s
